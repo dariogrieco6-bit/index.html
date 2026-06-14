@@ -10,20 +10,18 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f0f2f5;color:#1a
 header{background:#1D9E75;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:99;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .hdr-left{display:flex;align-items:center;gap:10px}
 .hdr-left h1{font-size:17px;font-weight:600;white-space:nowrap}
-.hdr-left span{font-size:12px;opacity:.8;display:none}
-@media(min-width:500px){.hdr-left span{display:inline}}
+.hdr-left span{font-size:12px;opacity:.8}
 .hdr-right{display:flex;gap:8px;flex-shrink:0}
 .btn{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:opacity .15s}
 .btn:hover{opacity:.85}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn-white{background:#fff;color:#1D9E75}
 .btn-outline{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.55)}
-.btn-green{background:#1D9E75;color:#fff}
 main{max-width:780px;margin:0 auto;padding:20px 16px 40px}
 .panel{background:#fff;border-radius:14px;border:1px solid #e2e2e0;padding:16px;margin-bottom:16px}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .field label{font-size:11px;font-weight:700;color:#888;letter-spacing:.4px;display:block;margin-bottom:5px}
-select{width:100%;border:1px solid #ddd;border-radius:8px;padding:9px 11px;font-size:14px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;appearance:none}
+select{width:100%;border:1px solid #ddd;border-radius:8px;padding:9px 11px;font-size:14px;background:#fafafa;color:#1a1a1a}
 select:focus{outline:2px solid #1D9E75;border-color:transparent}
 .gen-btn{width:100%;background:#1D9E75;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
 .gen-btn:disabled{opacity:.5;cursor:not-allowed}
@@ -66,15 +64,14 @@ select:focus{outline:2px solid #1D9E75;border-color:transparent}
   main{padding:0;max-width:100%}
   .ecard{break-inside:avoid;border:1px solid #ddd}
   .cat-section{break-inside:avoid}
-  #print-hdr{display:block!important}
+  #phdr{display:block!important}
 }
-#print-hdr{display:none;text-align:center;padding-bottom:12px;margin-bottom:16px;border-bottom:2px solid #1D9E75}
-#print-hdr h2{font-size:20px;color:#1D9E75}
-#print-hdr p{font-size:12px;color:#888;margin-top:4px}
+#phdr{display:none;text-align:center;padding-bottom:12px;margin-bottom:16px;border-bottom:2px solid #1D9E75}
+#phdr h2{font-size:20px;color:#1D9E75}
+#phdr p{font-size:12px;color:#888;margin-top:4px}
 </style>
 </head>
 <body>
-
 <header>
   <div class="hdr-left">
     <span style="font-size:22px">⚽</span>
@@ -113,11 +110,8 @@ select:focus{outline:2px solid #1D9E75;border-color:transparent}
         </select>
       </div>
     </div>
-    <button class="gen-btn" id="gbtn" onclick="genera()">
-      ⚽ Genera scheda di oggi
-    </button>
+    <button class="gen-btn" id="gbtn" onclick="genera()">⚽ Genera scheda di oggi</button>
   </div>
-
   <div id="out">
     <div class="empty">
       <div class="empty-icon">⚽</div>
@@ -127,9 +121,8 @@ select:focus{outline:2px solid #1D9E75;border-color:transparent}
 </main>
 
 <script>
+const API_KEY="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";
 const TEMI=["possesso palla","finalizzazione","transizione","pressing e recupero palla","gioco in ampiezza","passaggio e smarcamento","conduzione e dribbling","gioco sulle fasce"];
-const KEY="sk-ant-api03-YOUR_KEY_HERE";
-
 function temaAuto(){const d=new Date();return TEMI[(d.getDate()+d.getMonth()*31)%TEMI.length]}
 function oggi(){return new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 
@@ -139,53 +132,28 @@ async function genera(){
   const out=document.getElementById('out');
   const tema=document.getElementById('tema').value==='auto'?temaAuto():document.getElementById('tema').value;
   const durata=document.getElementById('durata').value;
-
   [hbtn,gbtn].forEach(b=>{b.disabled=true});
   hbtn.innerHTML='<span class="spin"></span>';
-  gbtn.innerHTML='<span class="spin"></span> Generando la scheda...';
-
+  gbtn.innerHTML='<span class="spin"></span> Generando...';
   out.innerHTML=`<div style="display:grid;gap:8px">${[...Array(6)].map(()=>'<div class="sk" style="height:100px"></div>').join('')}</div>`;
-
-  const prompt=`Sei un preparatore di calcio giovanile italiano. Genera una scheda ispirata a YouCoach.
-
-Tema: "${tema}" — Durata totale: ${durata} minuti
-
-Per U11 (Pulcini) e U12 (Esordienti) crea 3 esercizi ciascuno: tecnica, tattica, atletica.
-Tutti con lo stesso filo conduttore. Durata totale entro ${durata} min.
-
-Rispondi SOLO con JSON senza backtick:
-{"tema":"...","filo_conduttore":"max 20 parole","u11":[{"tipo":"tecnica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"tattica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"atletica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."}],"u12":[{"tipo":"tecnica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"tattica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"atletica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."}]}`;
-
+  const prompt=`Sei un preparatore di calcio giovanile italiano. Genera una scheda ispirata a YouCoach.\nTema: "${tema}" — Durata totale: ${durata} minuti\nPer U11 (Pulcini) e U12 (Esordienti) crea 3 esercizi ciascuno: tecnica, tattica, atletica.\nTutti con lo stesso filo conduttore. Durata totale entro ${durata} min.\nRispondi SOLO con JSON senza backtick:\n{"tema":"...","filo_conduttore":"max 20 parole","u11":[{"tipo":"tecnica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"tattica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"atletica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."}],"u12":[{"tipo":"tecnica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"tattica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."},{"tipo":"atletica","nome":"...","durata_min":N,"giocatori":"...","spazio":"...","descrizione":"3-4 frasi","obiettivo":"..."}]}`;
   try{
     const r=await fetch("https://api.anthropic.com/v1/messages",{
       method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "x-api-key":getKey(),
-        "anthropic-version":"2023-06-01",
-        "anthropic-dangerous-direct-browser-access":"true"
-      },
+      headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
       body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,messages:[{role:"user",content:prompt}]})
     });
-    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Errore API '+r.status)}
+    if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Errore '+r.status)}
     const d=await r.json();
     const txt=d.content.map(b=>b.text||'').join('');
     const j=JSON.parse(txt.replace(/```json|```/g,'').trim());
     render(j,durata);
   }catch(e){
-    out.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p><strong>Errore:</strong> ${e.message}<br><br>Verifica che la API key sia inserita correttamente nel file.</p></div>`;
+    out.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><p><strong>Errore:</strong> ${e.message}</p></div>`;
   }
   [hbtn,gbtn].forEach(b=>{b.disabled=false});
   hbtn.innerHTML='⚽ Genera';
   gbtn.innerHTML='⚽ Genera scheda di oggi';
-}
-
-function getKey(){
-  const saved=localStorage.getItem('ak');
-  if(saved&&saved.startsWith('sk-ant')) return saved;
-  const k=prompt('Inserisci la tua API key Anthropic (inizia con sk-ant-):\n\nOttienila gratis su: console.anthropic.com');
-  if(k&&k.trim().startsWith('sk-ant')){localStorage.setItem('ak',k.trim());return k.trim()}
-  throw new Error('API key non valida o non inserita');
 }
 
 const TL={tecnica:'TECNICA',tattica:'TATTICA',atletica:'ATLETICA'};
@@ -197,20 +165,10 @@ function catHtml(cat,ex){
   const lk=cat==='u11'?'https://www.youcoach.it/figc/situazioni-di-gioco-3-contro-3-u10u11':'https://www.youcoach.it/figc/situazioni-di-gioco-5-contro-5-u12u13';
   const tot=ex.reduce((s,e)=>s+e.durata_min,0);
   return `<div class="cat-section">
-    <div class="cat-hdr">
-      <span class="cat-pill ${pc}">${lb}</span><hr>
-      <a class="yc-link" href="${lk}" target="_blank">YouCoach ↗</a>
-    </div>
+    <div class="cat-hdr"><span class="cat-pill ${pc}">${lb}</span><hr><a class="yc-link" href="${lk}" target="_blank">YouCoach ↗</a></div>
     ${ex.map(e=>`<div class="ecard ${e.tipo}">
-      <div class="ecard-top">
-        <span class="tipo-tag ${e.tipo}">${TE[e.tipo]} ${TL[e.tipo]}</span>
-        <span class="ecard-nome">${e.nome}</span>
-      </div>
-      <div class="pills">
-        <span class="pill">⏱ ${e.durata_min} min</span>
-        <span class="pill">👥 ${e.giocatori}</span>
-        <span class="pill">📐 ${e.spazio}</span>
-      </div>
+      <div class="ecard-top"><span class="tipo-tag ${e.tipo}">${TE[e.tipo]} ${TL[e.tipo]}</span><span class="ecard-nome">${e.nome}</span></div>
+      <div class="pills"><span class="pill">⏱ ${e.durata_min} min</span><span class="pill">👥 ${e.giocatori}</span><span class="pill">📐 ${e.spazio}</span></div>
       <p class="edesc">${e.descrizione}</p>
       <div class="ob"><strong>🎯 Obiettivo:</strong> ${e.obiettivo}</div>
     </div>`).join('')}
@@ -220,14 +178,10 @@ function catHtml(cat,ex){
 
 function render(j,durata){
   document.getElementById('out').innerHTML=`
-    <div id="print-hdr"><h2>⚽ Scheda Allenamento — ${j.tema}</h2><p>${oggi()} · ${durata} min</p></div>
-    <div class="meta">
-      <span class="data-lbl">${oggi()}</span>
-      <span class="tema-badge">🎯 ${j.tema}</span>
-    </div>
+    <div id="phdr"><h2>⚽ Scheda Allenamento — ${j.tema}</h2><p>${oggi()} · ${durata} min</p></div>
+    <div class="meta"><span class="data-lbl">${oggi()}</span><span class="tema-badge">🎯 ${j.tema}</span></div>
     <p class="filo">🔗 ${j.filo_conduttore}</p>
-    ${catHtml('u11',j.u11)}
-    ${catHtml('u12',j.u12)}`;
+    ${catHtml('u11',j.u11)}${catHtml('u12',j.u12)}`;
 }
 </script>
 </body>
